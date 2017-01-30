@@ -6,8 +6,10 @@
 ## Libraries necessary 
 library(tidyverse)
 library(FactoMineR)
+library(gtools)
 
-df <- read_csv("D:/_clustering/_points/cacao_swd.csv")
+
+df <- read_csv("C:/Jeison/Github/cocoa_Col/data_base/cacao_swd.csv")
 
 # Es necesario investigar acerca del analisis de componentes principales dual que es mejor pero en este momento
 # no recuerdomos que ñoña hace
@@ -17,19 +19,26 @@ df <- read_csv("D:/_clustering/_points/cacao_swd.csv")
 
 # res.pca = PCA(decathlon[,1:10], scale.unit = TRUE, graph = F)
 
-novar <- c("X1", "FID", "Long", "Lat", "ID")
+## Quiza pueda ser mejor tener un vector que indique que variables quiero seleccionar para el analisis
 
-vartoacp <- df %>%
+vars_acp  <- df %>%
   select(bio_1:bio_29)
 
-ncpnumber <- dim(vartoacp)[2]
+## num_vars me indica el numero de variables para calcular luego todas las componentes en el analisis de componentes principales
 
-res.pca = PCA(vartoacp, scale.unit = TRUE, graph = T, ncp = ncpnumber)
-datax <- data.frame(res.pca$eig)
+num_vars <- dim(vars_acp)[2]
 
-ggplot(aes(x = row.names(datax), y = eigenvalue), data = datax) +
+res.pca = PCA(vartoacp, scale.unit = TRUE, graph = T, ncp = num_vars)
+
+eigen_df <- tbl_df(data.frame(res.pca$eig))
+
+ggplot(aes(x = reorder(row.names(eigen_df), -eigenvalue), y = eigenvalue), data = eigen_df) +
   geom_bar(stat = 'identity') +
-  labs(x='ID')
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(x = "Componentes") +
+  ggtitle("Varianza por componente") +
+  geom_hline(aes(yintercept=1), colour = "red")
 
-barplot(res.pca$eig$eigenvalue)
-res.pca$var
+## 
+
+
